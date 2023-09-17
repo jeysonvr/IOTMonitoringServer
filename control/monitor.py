@@ -1,6 +1,6 @@
 from argparse import ArgumentError
 import ssl
-from django.db.models import Avg
+from django.db.models import Avg, Sum
 from datetime import timedelta, datetime
 from receiver.models import Data, Measurement
 import paho.mqtt.client as mqtt
@@ -21,6 +21,7 @@ def analyze_data():
     data = Data.objects.filter(
         base_time__gte=datetime.now() - timedelta(hours=1))
     aggregation = data.annotate(check_value=Avg('avg_value')) \
+        .annotate(amount_value=Sum('length')) \
         .select_related('station', 'measurement') \
         .select_related('station__user', 'station__location') \
         .select_related('station__location__city', 'station__location__state',
@@ -52,6 +53,16 @@ def analyze_data():
             message = "ALERT {} {} {}".format(variable, min_value, max_value)
             topic = '{}/{}/{}/{}/in'.format(country, state, city, user)
             print(datetime.now(), "Sending alert to {} {}".format(topic, variable))
+            client.publish(topic, message)
+            alerts += 1
+
+        # Si la ccantidad de mediciones realizadas en la última hora es menor a 100
+        # Se envía una alerta para informar que la cantidad de datos aún no es suficiente
+        # para ser completamente fiable
+        if amount_value < 100:
+            message = "ALERT AMOUNT {} {} {}".format(variable, min_value, max_value)
+            topic = '{}/{}/{}/{}/in'.format(country, state, city, user)
+            print(datetime.now(), "Sending amount alert to {} {}".format(topic, variable))
             client.publish(topic, message)
             alerts += 1
 
