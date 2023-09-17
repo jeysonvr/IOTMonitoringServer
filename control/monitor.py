@@ -26,7 +26,7 @@ def analyze_data():
         .select_related('station__user', 'station__location') \
         .select_related('station__location__city', 'station__location__state',
                         'station__location__country') \
-        .values('check_value', 'station__user__username',
+        .values('check_value', 'amount_value', 'station__user__username',
                 'measurement__name',
                 'measurement__max_value',
                 'measurement__min_value',
