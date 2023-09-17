@@ -59,8 +59,7 @@ def analyze_data():
         # Si la ccantidad de mediciones realizadas en la última hora es menor a 100
         # Se envía una alerta para informar que la cantidad de datos aún no es suficiente
         # para ser completamente fiable
-        if item["amount_value"] < 100000000000:
-        # if 10 < 100:
+        if item["amount_value"] < 100:
             message = "ALERT NOT ENOUGH DATA {} {}".format(variable, item["amount_value"])
             topic = '{}/{}/{}/{}/in'.format(country, state, city, user)
             print(datetime.now(), "Sending amount alert to {} {}".format(topic, variable))
